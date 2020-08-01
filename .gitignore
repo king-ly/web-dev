@@ -1,0 +1,4 @@
+tengine/logs
+mysql8.0/data
+etcd/data
+nacos/logs

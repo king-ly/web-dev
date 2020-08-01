@@ -1,0 +1,1 @@
+CREATE DATABASE `pinzhicatering` CHARACTER SET 'utf8mb4';

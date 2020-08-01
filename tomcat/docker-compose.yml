@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  #品智自建
+  web-pzkj:
+    #通过/tomcat目录下Dockerfile构建
+    build:
+      context: ./
+    container_name: pzkj-web
+    #restart: always
+    ports:
+      - 8082:8080
+      - 5007:5005
+    #挂载项目编译输出路径
+    volumes:
+      - ../../pzcatering-web/target/pzcatering-web:/usr/local/tomcat/webapps/pzcatering-web
+      - ./conf/server.xml:/usr/local/tomcat/conf/server.xml   #这里面需要添加Context配置
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS="-Xms256m -Xmx512m -Djava.security.egd=file:/dev/./urandom -javaagent:/usr/local/tomcat/bin/jmx_prometheus_javaagent-0.3.1.jar=9151:/usr/local/tomcat/bin/jmx_exporter.yml"  

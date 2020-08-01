@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m
+route:
+  receiver: webhook
+  group_wait: 30s
+  group_interval: 2m   #2分钟重新发一次
+  repeat_interval: 2s
+  group_by: [alertname]
+  routes:
+  - receiver: webhook
+    group_wait: 30s
+receivers:
+- name: webhook
+  webhook_configs:
+  - url: http://dingtalk:8060/dingtalk/webhook1/send    #这里配置钉钉的地址webhook1
+    send_resolved: true

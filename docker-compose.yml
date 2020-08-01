@@ -1,0 +1,129 @@
+version: '3'
+services:     
+  #redis服务名称  
+  redis:
+    image: redis:3
+    command: redis-server --requirepass 123456
+    restart: always
+    ports:
+      - 6379:6379
+      
+  tengine:
+    #restart: always
+    image: registry.cn-hangzhou.aliyuncs.com/lingdun/tengine:2.3.2
+    privileged: true
+    ports:
+      - 80:80
+    volumes:
+      - ./tengine/conf/nginx.conf:/usr/local/nginx/conf/nginx.conf
+      - ./tengine/conf/web/:/usr/local/nginx/conf/web/
+      - ./tengine/conf/stream/:/usr/local/nginx/conf/stream/
+    environment:
+      - TZ=Asia/Shanghai
+      
+  #beanstalkd配置
+  beanstalkd:
+    image: schickling/beanstalkd
+    restart: always
+    ports:
+      - 11300:11300
+          
+  #etcd配置    
+  etcd:
+    image: appcelerator/etcd:3.2.18
+    restart: always
+    ports:
+      - 42379:2379
+      - 42380:2380
+    volumes:
+      - etcd_data:/data
+    
+  #etcd管理页面 
+  etcdkeeper:
+    image: deltaprojects/etcdkeeper
+    privileged: true
+    ports:
+      - 8088:8080
+      
+  #mysql8.0
+  mysql8:
+    image: mysql:8.0.20
+    restart: always
+    privileged: true
+    command: 
+        --default-authentication-plugin=caching_sha2_password
+    environment:
+        MYSQL_ROOT_PASSWORD: "123456"
+        TZ: Asia/Shanghai
+    ports:
+      - 3306:3306
+    volumes:
+      #mysql.cnf文件的权限必须为只读,右击属性中修改
+      - ./mysql8.0/conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      #data目录挂载
+      - mysql_data:/var/lib/mysql
+  
+  #postgresql
+  postgres:
+    image: postgres:12.3
+    environment:
+      POSTGRES_PASSWORD: "123456"
+    privileged: true
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    
+  #nacos配置中心
+  nacos:
+    image: nacos/nacos-server:latest
+    env_file:
+      - ./nacos/env/nacos-standlone-mysql.env
+    volumes:
+      - ./nacos/plugins/:/home/nacos/plugins/mysql/
+      - ./nacos/logs/:/home/nacos/logs
+      - ./nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "8848:8848"
+      - "9555:9555"
+    depends_on:
+      - mysql8
+    restart: on-failure
+    
+  #openj9
+  web-j9:
+    image: tomcat:8.5.57-jdk8-adoptopenjdk-openj9
+    ports:
+      - 8080:8080
+      - 5005:5005
+    #挂载项目编译输出路径
+    #volumes:
+      #- ../test-web/target/test-web:/usr/local/tomcat/webapps/test-web
+      #- ./tomcat/conf/server.xml:/usr/local/tomcat/conf/server.xml
+    environment:
+      - TZ=Asia/Shanghai
+      - CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+      - JAVA_OPTS="-Xaggressive -Xalwaysclassgc -Xconmeter:dynamic -Xquickstart"
+  
+  #oracle jdk1.8
+  web-jdk:
+    image: tomcat:8.5.57
+    ports:
+      - 8081:8080
+      - 5006:5005
+    #挂载项目编译输出路径
+    #volumes:
+      #- ../test-web/target/test-web:/usr/local/tomcat/webapps/test-web
+      #- ./tomcat/conf/server.xml:/usr/local/tomcat/conf/server.xml
+    environment:
+      - TZ=Asia/Shanghai
+      - CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+      - JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom"  
+      
+#挂载卷,只要vm不删除，数据会一直保存
+#默认挂载到/mnt/sda1/var/lib/docker/volumes
+volumes:
+  pgdata:
+  mysql_data:
+  etcd_data:

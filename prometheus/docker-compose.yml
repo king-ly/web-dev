@@ -1,0 +1,74 @@
+version: '3.1'
+
+services:
+    prometheus:
+        image: prom/prometheus
+        hostname: prometheus
+        #restart: always
+        volumes:
+            - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./rules/:/usr/local/prometheus/rules/
+        ports:
+            - "9090:9090"
+   
+    alertmanager:
+        image: prom/alertmanager
+        hostname: alertmanager
+        #restart: always
+        volumes:
+            - ./conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+        ports:
+            - "9093:9093"
+            
+    dingtalk:
+        image: timonwong/prometheus-webhook-dingtalk
+        hostname: dingtalk
+        #restart: always
+        ports:
+            - "8060:8060"
+        command: 
+            #your dingtalk whebhook
+            --ding.profile="webhook1=https://oapi.dingtalk.com/robot/send?access_token=047c161899fedbf7f75b0e7cd03a6f44b048ee56ce9ac1e848aa4c852bcf652d"
+            
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        hostname: grafana
+        privileged: true
+        #restart: always
+        volumes:
+            - grafana-storage:/var/lib/grafana      #卷挂载
+        ports:
+            - "3000:3000"  
+            
+    node-exporter:
+        image: quay.io/prometheus/node-exporter
+        hostname: node-exporter
+        #restart: always
+        ports:
+            - "9100:9100"
+        environment:
+            - TZ=Asia/Shanghai
+            
+    cloudprober:
+        image: cloudprober/cloudprober
+        hostname: cloudprober
+        #restart: always
+        volumes:
+            - ./conf/cloudprober_validator.cfg:/etc/cloudprober.cfg
+        ports:
+            - "9313:9313"
+        environment:
+            - TZ=Asia/Shanghai
+            
+    mysql-exporter:
+        image: prom/mysqld-exporter
+        hostname: mysql-exporter
+        #restart: always
+        ports:
+            - "9104:9104"
+        environment:
+            - DATA_SOURCE_NAME=root:123456@(192.168.99.124:3306)/
+
+volumes:
+  grafana-storage:

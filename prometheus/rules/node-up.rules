@@ -1,0 +1,11 @@
+groups:
+- name: node-up
+  rules:
+  - alert: node-up
+    expr: up{job="node-exporter"} == 0
+    for: 15s
+    labels:
+      severity: 1
+      team: node
+    annotations:
+      summary: "[测试]pzkj{{ $labels.instance }} 已停止运行超过 15s！"
