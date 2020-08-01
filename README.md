@@ -23,7 +23,7 @@
 ```
 jdbc_url=jdbc:mysql://虚拟机IP:3306/pinzhicatering?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&useSSL=false&allowMultiQueries=true
 jdbc_username=root
-jdbc_password=pzkj13061303
+jdbc_password=123456
 ```
 
 
@@ -42,7 +42,7 @@ jdbc_password=pzkj13061303
 > 修改redis的地址和密码
 ```
 redis.host=192.168.99.122
-redis.pwd=pzkj13061303
+redis.pwd=123456
 redis.port=6379
 ```
 
